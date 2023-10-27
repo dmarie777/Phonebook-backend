@@ -1,9 +1,11 @@
 const express = require('express')
 const app = express()
 const morgan = require('morgan')
+const cors = require('cors')
 
 app.use(express.json())
 app.use(morgan('tiny'))
+app.use(cors())
 morgan.token('req', function (req, res) { return JSON.stringify(req.body) })
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :req'))
 
@@ -65,7 +67,7 @@ function generateID() {
 }
 
 app. post('/api/persons', (request, response) => {
-  
+  console.log(request.body)
   if(!request.body.name) {
     return response.status(400).json({
       error: "name is missing"
