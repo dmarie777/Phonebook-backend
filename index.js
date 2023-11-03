@@ -43,10 +43,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
       .catch(error => next(error))
 })
 
-
-
-
-app. post('/api/persons', (request, response) => {
+app. post('/api/persons', (request, response, next) => {
   console.log(request.body)
   if(!request.body.name) {
     return response.status(400).json({
@@ -58,27 +55,46 @@ app. post('/api/persons', (request, response) => {
       error: "number is missing"
     })
   }
-  // if(persons.filter(person => person.name === request.body.name).length) {
-  //   return response.status(400).json({
-  //     error: "name must be unique"
-  //   })
-  // }
+
   const newPerson = new Person({
     "name": request.body.name,
     "number": request.body.number
   })
   newPerson.save().then( savedPerson => {
     response.json(savedPerson)
-
   })
+  .catch(error => next(error))
 })
+
+app.put('/api/persons/:id', (request, response, next )=> {
+  const newPhone = {
+    "name": request.body.name,
+    "number": request.body.number
+  }
+  
+  Person.findByIdAndUpdate(request.params.id, newPhone, {new: true})
+    .then(result => {
+      console.log(result)
+      response.json(result)
+    })
+    .catch(error => next(error))
+})
+
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+
+app.use(unknownEndpoint)
 
 const errorHandler = (error, request, response, next) => {
   console.error(error.message)
 
   if (error.name === 'CastError') {
     return response.status(400).send({error: 'malformatted id'})
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).send({error: error})
   }
+  next(error)
 }
 app.use(errorHandler)
 
